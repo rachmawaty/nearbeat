@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Nearbeat design tokens */
+:root {
+  --nb-bg: #0F172A;
+  --nb-surface: #1E293B;
+  --nb-border: #334155;
+  --nb-muted: #64748B;
+  --nb-text: #F1F5F9;
+  --nb-blue: #3B82F6;
+  --nb-green: #10B981;
+}
+
+body {
+  background-color: var(--nb-bg);
+  color: var(--nb-text);
+  font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}

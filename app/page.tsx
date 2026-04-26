@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { ContextBar } from "@/components/ContextBar";
 import { OfferFeed } from "@/components/OfferFeed";
 import { PersonaSwitcher } from "@/components/PersonaSwitcher";
@@ -9,6 +9,12 @@ import { ClaimModal } from "@/components/ClaimModal";
 import { ContextEditor, ContextOverrides } from "@/components/ContextEditor";
 import { Offer, OfferResponse, PersonaKey } from "@/lib/types";
 import { personas } from "@/data/personas";
+
+const CONNECTION_LABELS: Record<string, string> = {
+  email: "📧 Gmail",
+  bank: "🏦 Bank",
+  maps: "📍 Maps",
+};
 
 async function fetchOffers(personaKey: PersonaKey, contextOverrides?: ContextOverrides): Promise<OfferResponse> {
   const res = await fetch("/api/offers", {
@@ -21,9 +27,10 @@ async function fetchOffers(personaKey: PersonaKey, contextOverrides?: ContextOve
 }
 
 export default function Home() {
-  const { data: session } = useSession();
-  const isRealUser = !!session?.user;
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
   const [activePersona, setActivePersona] = useState<PersonaKey>("maya");
+  const [connections, setConnections] = useState<string[]>([]);
   const [cache, setCache] = useState<Partial<Record<PersonaKey, Offer[]>>>({});
   const [loading, setLoading] = useState(true);
   const [claimedOffer, setClaimedOffer] = useState<Offer | null>(null);
@@ -31,8 +38,19 @@ export default function Home() {
   const [overrides, setOverrides] = useState<ContextOverrides>({});
   const loadingSet = useRef<Set<PersonaKey>>(new Set());
 
+  useEffect(() => {
+    const persona = localStorage.getItem("nb_persona") as PersonaKey | null;
+    if (!persona || !(persona in personas)) {
+      router.replace("/auth/signin");
+      return;
+    }
+    const conns = JSON.parse(localStorage.getItem("nb_connections") ?? "[]");
+    setActivePersona(persona);
+    setConnections(conns);
+    setReady(true);
+  }, [router]);
+
   const loadPersona = async (key: PersonaKey, forceOverrides?: ContextOverrides) => {
-    // Only skip if already cached and no overrides being applied
     if (!forceOverrides && (cache[key] || loadingSet.current.has(key))) return;
     loadingSet.current.add(key);
     try {
@@ -43,17 +61,18 @@ export default function Home() {
     }
   };
 
-  // Pre-fetch maya first (default), then background-load others
   useEffect(() => {
+    if (!ready) return;
     const init = async () => {
       setLoading(true);
-      await loadPersona("maya");
+      await loadPersona(activePersona);
       setLoading(false);
-      Promise.all([loadPersona("carlos"), loadPersona("priya")]);
+      const others = (["maya", "carlos", "priya"] as PersonaKey[]).filter((k) => k !== activePersona);
+      Promise.all(others.map((k) => loadPersona(k)));
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready]);
 
   const handlePersonaChange = (key: PersonaKey) => {
     setActivePersona(key);
@@ -64,7 +83,6 @@ export default function Home() {
     }
   };
 
-  // #6 — Regenerate: clear cache for current persona and re-fetch
   const handleRegenerate = async () => {
     setCache((prev) => ({ ...prev, [activePersona]: undefined }));
     loadingSet.current.delete(activePersona);
@@ -73,7 +91,6 @@ export default function Home() {
     setLoading(false);
   };
 
-  // #1 — Apply context overrides and regenerate
   const handleApplyOverrides = async (newOverrides: ContextOverrides) => {
     setOverrides(newOverrides);
     setCache((prev) => ({ ...prev, [activePersona]: undefined }));
@@ -83,24 +100,27 @@ export default function Home() {
     setLoading(false);
   };
 
+  const handleSignOut = () => {
+    localStorage.removeItem("nb_persona");
+    localStorage.removeItem("nb_connections");
+    router.push("/auth/signin");
+  };
+
+  if (!ready) return null;
+
   const currentOffers = cache[activePersona] ?? null;
   const isLoading = loading && !currentOffers;
   const hasOverrides = Object.keys(overrides).length > 0;
 
   return (
     <main className="min-h-screen max-w-md mx-auto relative pb-32">
-      {/* Wordmark + session header */}
+      {/* Header */}
       <div className="px-4 pt-6 pb-2 flex items-center justify-between">
         <div>
-          <span className="text-2xl font-bold" style={{ color: "var(--nb-blue)" }}>
-            nearbeat
-          </span>
-          <span className="text-xs ml-2" style={{ color: "var(--nb-muted)" }}>
-            your city pulse
-          </span>
+          <span className="text-2xl font-bold" style={{ color: "var(--nb-blue)" }}>nearbeat</span>
+          <span className="text-xs ml-2" style={{ color: "var(--nb-muted)" }}>your city pulse</span>
         </div>
         <div className="flex items-center gap-2">
-          {/* #1 — Edit context button */}
           <button
             onClick={() => setShowEditor(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -112,31 +132,39 @@ export default function Home() {
           >
             {hasOverrides ? "✦ Custom" : "⚙ Context"}
           </button>
-          {/* Sign out */}
-          {isRealUser && (
-            <button
-              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-              className="px-3 py-1.5 rounded-full text-xs font-semibold"
-              style={{ backgroundColor: "var(--nb-surface)", color: "var(--nb-muted)", border: "1px solid var(--nb-border)" }}
-            >
-              Sign out
-            </button>
-          )}
+          <button
+            onClick={handleSignOut}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: "var(--nb-surface)", color: "var(--nb-muted)", border: "1px solid var(--nb-border)" }}
+          >
+            Switch
+          </button>
         </div>
       </div>
+
+      {/* Connected data pills */}
+      {connections.length > 0 && (
+        <div className="px-4 pt-2 flex gap-2 flex-wrap">
+          {connections.map((c) => (
+            <span
+              key={c}
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ backgroundColor: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)" }}
+            >
+              {CONNECTION_LABELS[c]} ✓
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Context bar */}
       <ContextBar personaKey={activePersona} overrides={overrides} />
 
-      {/* Offers label + regenerate button */}
+      {/* Offers label + regenerate */}
       <div className="px-4 mt-5 mb-3 flex items-center justify-between">
-        <p
-          className="text-[11px] font-bold tracking-widest uppercase"
-          style={{ color: "var(--nb-muted)" }}
-        >
+        <p className="text-[11px] font-bold tracking-widest uppercase" style={{ color: "var(--nb-muted)" }}>
           Offers for you
         </p>
-        {/* #6 — Regenerate button */}
         <button
           onClick={handleRegenerate}
           disabled={isLoading}
@@ -152,7 +180,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Offer feed */}
       <OfferFeed
         offers={currentOffers}
         loading={isLoading}
@@ -160,15 +187,10 @@ export default function Home() {
         onClaim={setClaimedOffer}
       />
 
-      {/* Persona switcher — only for demo (unauthenticated) users */}
-      {!isRealUser && (
-        <PersonaSwitcher active={activePersona} onChange={handlePersonaChange} />
-      )}
+      <PersonaSwitcher active={activePersona} onChange={handlePersonaChange} />
 
-      {/* Claim modal */}
       <ClaimModal offer={claimedOffer} onClose={() => setClaimedOffer(null)} />
 
-      {/* Context editor */}
       {showEditor && (
         <ContextEditor
           overrides={overrides}

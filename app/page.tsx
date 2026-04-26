@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { ContextBar } from "@/components/ContextBar";
 import { OfferFeed } from "@/components/OfferFeed";
 import { PersonaSwitcher } from "@/components/PersonaSwitcher";
@@ -20,6 +21,8 @@ async function fetchOffers(personaKey: PersonaKey, contextOverrides?: ContextOve
 }
 
 export default function Home() {
+  const { data: session } = useSession();
+  const isRealUser = !!session?.user;
   const [activePersona, setActivePersona] = useState<PersonaKey>("maya");
   const [cache, setCache] = useState<Partial<Record<PersonaKey, Offer[]>>>({});
   const [loading, setLoading] = useState(true);
@@ -86,7 +89,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen max-w-md mx-auto relative pb-32">
-      {/* Wordmark */}
+      {/* Wordmark + session header */}
       <div className="px-4 pt-6 pb-2 flex items-center justify-between">
         <div>
           <span className="text-2xl font-bold" style={{ color: "var(--nb-blue)" }}>
@@ -96,18 +99,30 @@ export default function Home() {
             your city pulse
           </span>
         </div>
-        {/* #1 — Edit context button */}
-        <button
-          onClick={() => setShowEditor(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-          style={{
-            backgroundColor: hasOverrides ? "rgba(59,130,246,0.15)" : "var(--nb-surface)",
-            color: hasOverrides ? "var(--nb-blue)" : "var(--nb-muted)",
-            border: `1px solid ${hasOverrides ? "var(--nb-blue)" : "var(--nb-border)"}`,
-          }}
-        >
-          {hasOverrides ? "✦ Custom" : "⚙ Context"}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* #1 — Edit context button */}
+          <button
+            onClick={() => setShowEditor(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              backgroundColor: hasOverrides ? "rgba(59,130,246,0.15)" : "var(--nb-surface)",
+              color: hasOverrides ? "var(--nb-blue)" : "var(--nb-muted)",
+              border: `1px solid ${hasOverrides ? "var(--nb-blue)" : "var(--nb-border)"}`,
+            }}
+          >
+            {hasOverrides ? "✦ Custom" : "⚙ Context"}
+          </button>
+          {/* Sign out */}
+          {isRealUser && (
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: "var(--nb-surface)", color: "var(--nb-muted)", border: "1px solid var(--nb-border)" }}
+            >
+              Sign out
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Context bar */}
@@ -145,8 +160,10 @@ export default function Home() {
         onClaim={setClaimedOffer}
       />
 
-      {/* Persona switcher (fixed bottom) */}
-      <PersonaSwitcher active={activePersona} onChange={handlePersonaChange} />
+      {/* Persona switcher — only for demo (unauthenticated) users */}
+      {!isRealUser && (
+        <PersonaSwitcher active={activePersona} onChange={handlePersonaChange} />
+      )}
 
       {/* Claim modal */}
       <ClaimModal offer={claimedOffer} onClose={() => setClaimedOffer(null)} />

@@ -3,6 +3,19 @@
 import { useEffect, useState } from "react";
 import { Offer } from "@/lib/types";
 
+async function persistClaim(offer: Offer) {
+  await fetch("/api/claim", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      merchantId: offer.merchant_id,
+      merchantName: offer.merchant_name,
+      offerText: offer.offer,
+      signalUsed: offer.signal_used,
+    }),
+  }).catch(() => {});
+}
+
 const COUNTDOWN_SECONDS = 120;
 
 interface Props {
@@ -17,6 +30,7 @@ export function ClaimModal({ offer, onClose }: Props) {
   useEffect(() => {
     if (!offer) return;
     setSeconds(COUNTDOWN_SECONDS);
+    persistClaim(offer);
 
     const interval = setInterval(() => {
       setSeconds((s) => {
@@ -30,7 +44,7 @@ export function ClaimModal({ offer, onClose }: Props) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [offer]);
+  }, [offer, onClose]);
 
   if (!offer) return null;
 

@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  profile       UserProfile?
+  claimedOffers ClaimedOffer[]
+  createdAt     DateTime       @default(now())
+}
+
+model UserProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Location
+  neighborhood        String   @default("South End")
+  city                String   @default("Boston")
+  currentArea         String   @default("South End, Boston")
+
+  // Time & routine
+  timeOfDayLabel      String   @default("morning_commute")
+  currentTime         String   @default("8:05am")
+
+  // Route + schedule stored as JSON
+  routeToday          Json     @default("[]")
+  upcomingWaypoints   Json     @default("[]")
+  recurringPatterns   Json     @default("[]")
+  todaySchedule       Json     @default("[]")
+
+  // Spend
+  spendCategories     String[] @default([])
+  recentMerchants     String[] @default([])
+  avgTransaction      String   @default("medium")
+
+  // Environment
+  weatherCode         String   @default("sunny")
+  weather             String   @default("Sunny")
+
+  onboardingCompleted Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+model ClaimedOffer {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchantId   String
+  merchantName String
+  offerText    String
+  signalUsed   String
+  claimedAt    DateTime @default(now())
+}

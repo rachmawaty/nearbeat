@@ -2,6 +2,7 @@
 
 import { personas } from "@/data/personas";
 import { PersonaKey } from "@/lib/types";
+import { ContextOverrides } from "./ContextEditor";
 
 const weatherIcons: Record<string, string> = {
   rain: "🌧",
@@ -12,11 +13,16 @@ const weatherIcons: Record<string, string> = {
 
 interface Props {
   personaKey: PersonaKey;
+  overrides?: ContextOverrides;
 }
 
-export function ContextBar({ personaKey }: Props) {
+export function ContextBar({ personaKey, overrides = {} }: Props) {
   const ctx = personas[personaKey];
-  const { persona, temporal, location, environment, route } = ctx;
+  const { persona, location, route } = ctx;
+
+  const temporal = { ...ctx.temporal, ...overrides.temporal };
+  const environment = { ...ctx.environment, ...overrides.environment };
+
   const nextWaypoint = route.upcoming_waypoints[0];
 
   return (
@@ -40,7 +46,7 @@ export function ContextBar({ personaKey }: Props) {
             {location.neighborhood} · {location.city}
           </p>
         </div>
-        {/* Weather pill */}
+        {/* Weather pill — reflects overrides instantly */}
         <div
           className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0"
           style={{ backgroundColor: "var(--nb-bg)", color: "var(--nb-text)" }}
@@ -53,25 +59,16 @@ export function ContextBar({ personaKey }: Props) {
       {/* Bottom row: time + next waypoint */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: "var(--nb-muted)" }}>
-            🕐
-          </span>
+          <span className="text-xs" style={{ color: "var(--nb-muted)" }}>🕐</span>
           <span className="text-xs font-medium" style={{ color: "var(--nb-text)" }}>
             {temporal.current_time}
           </span>
         </div>
         {nextWaypoint && (
           <div className="flex items-center gap-1.5">
-            <span className="text-xs" style={{ color: "var(--nb-muted)" }}>
-              📍
-            </span>
-            <span className="text-xs" style={{ color: "var(--nb-muted)" }}>
-              {nextWaypoint.name}
-            </span>
-            <span
-              className="text-xs font-semibold"
-              style={{ color: "var(--nb-blue)" }}
-            >
+            <span className="text-xs" style={{ color: "var(--nb-muted)" }}>📍</span>
+            <span className="text-xs" style={{ color: "var(--nb-muted)" }}>{nextWaypoint.name}</span>
+            <span className="text-xs font-semibold" style={{ color: "var(--nb-blue)" }}>
               {nextWaypoint.eta_minutes}m
             </span>
           </div>

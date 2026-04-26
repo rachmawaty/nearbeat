@@ -1,11 +1,12 @@
 "use client";
 
-import { Offer } from "@/lib/types";
+import { ContextBundle, Offer } from "@/lib/types";
 import { OfferCard } from "./OfferCard";
 
 interface Props {
   offers: Offer[] | null;
   loading: boolean;
+  context: ContextBundle;
   onClaim: (offer: Offer) => void;
 }
 
@@ -30,7 +31,7 @@ function SkeletonCard() {
   );
 }
 
-export function OfferFeed({ offers, loading, onClaim }: Props) {
+export function OfferFeed({ offers, loading, context, onClaim }: Props) {
   if (loading || !offers) {
     return (
       <div className="flex flex-col gap-3">
@@ -44,7 +45,7 @@ export function OfferFeed({ offers, loading, onClaim }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {offers.map((offer) => (
-        <OfferCard key={offer.merchant_id} offer={offer} onClaim={onClaim} />
+        <OfferCard key={offer.merchant_id} offer={offer} context={context} onClaim={onClaim} />
       ))}
     </div>
   );

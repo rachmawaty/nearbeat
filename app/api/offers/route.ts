@@ -15,13 +15,14 @@ export async function POST(req: NextRequest) {
   }
 
   const base = personas[personaKey as PersonaKey];
-  const context: ContextBundle = contextOverrides
-    ? {
+  const overrides = contextOverrides as ContextOverrides | undefined;
+  const context: ContextBundle = overrides
+    ? ({
         ...base,
-        temporal: { ...base.temporal, ...(contextOverrides as ContextOverrides).temporal },
-        location: { ...base.location, ...(contextOverrides as ContextOverrides).location },
-        environment: { ...base.environment, ...(contextOverrides as ContextOverrides).environment },
-      }
+        temporal: { ...base.temporal, ...overrides.temporal },
+        location: { ...base.location, ...overrides.location },
+        environment: { ...base.environment, ...overrides.environment },
+      } as unknown as ContextBundle)
     : base;
 
   const result = await generateOffers(context, personaKey);

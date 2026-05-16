@@ -165,7 +165,7 @@ const Index = () => {
 
           <footer className="pt-8 pb-8 text-center">
             <p className="text-[10px] lg:text-xs text-muted-foreground">
-              Prototype · MIT AI Hackathon 2026 · Generative City Wallet
+              Nearbeat
             </p>
           </footer>
         </div>

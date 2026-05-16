@@ -65,7 +65,7 @@ export function Login({ onPick }: Props) {
         </div>
 
         <p className="mt-5 text-center text-[11px] text-muted-foreground">
-          Demo prototype · Mock accounts · No password required
+          No password required
         </p>
       </div>
     </div>

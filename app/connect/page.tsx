@@ -175,7 +175,7 @@ export default function Connect() {
         </button>
 
         <p className="text-center text-xs mt-4" style={{ color: "var(--nb-muted)" }}>
-          This is a prototype — no real data is accessed
+          This is a demo — no real data is accessed
         </p>
       </div>
     </div>

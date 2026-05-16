@@ -111,7 +111,7 @@ export function Onboarding({ onDone }: Props) {
         </p>
 
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          Demo prototype · No real OAuth · Mock data only
+          Connect only what you want — signals improve your offers.
         </p>
       </div>
     </div>

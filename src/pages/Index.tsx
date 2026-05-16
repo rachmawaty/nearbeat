@@ -5,41 +5,47 @@ import { IntegrationStatusBar } from "@/components/nearbeat/IntegrationStatusBar
 import { OfferCard } from "@/components/nearbeat/OfferCard";
 import { LiveContextDrawer } from "@/components/nearbeat/LiveContextDrawer";
 import { Onboarding } from "@/components/nearbeat/Onboarding";
-import { Login } from "@/components/nearbeat/Login";
+import { AuthScreen } from "@/components/nearbeat/AuthScreen";
 import { ThemeToggle } from "@/components/nearbeat/ThemeToggle";
 import { AgentThinking } from "@/components/nearbeat/AgentThinking";
+import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
 import { useAgent } from "@/hooks/useAgent";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const auth = useAuth();
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [onboardedKeys, setOnboardedKeys] = useState<Set<string>>(new Set());
+  const [onboarded, setOnboarded] = useState(false);
   const [time, setTime] = useState(() => formatTime(new Date()));
 
   const agent = useAgent();
+
+  // Once user is loaded, default to their saved persona
+  useEffect(() => {
+    if (auth.user && !activeKey) {
+      setActiveKey(auth.user.persona_key);
+    }
+  }, [auth.user]);
 
   const persona = useMemo(
     () => PERSONAS.find((p) => p.key === activeKey) ?? PERSONAS[0],
     [activeKey],
   );
 
-  // Active offers: AI-generated if available, else hardcoded persona offers
   const activeOffers: Offer[] = agent.result?.offers ?? persona.offers;
 
-  const runAgent = useCallback(() => {
-    agent.run(persona);
-  }, [agent, persona]);
+  const runAgent = useCallback(() => { agent.run(persona); }, [agent, persona]);
 
-  // Heartbeat: re-run agent when context changes significantly
   const heartbeat = useHeartbeat(
     useCallback((reason: string) => {
       if (!activeKey) return;
       toast({ title: "Context updated", description: reason });
     }, [activeKey]),
-    15 // stale after 15 minutes
+    15
   );
 
   useEffect(() => {
@@ -47,45 +53,54 @@ const Index = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Reset agent result when persona changes
-  useEffect(() => {
-    agent.reset();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeKey]);
+  useEffect(() => { agent.reset(); }, [activeKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlePersonaChange = (key: string) => {
+    setActiveKey(key);
+    auth.updatePersona(key);
+  };
 
   const handleClaim = (o: Offer) => {
     toast({ title: `${o.merchant_name} — claimed`, description: o.offer });
   };
 
-  if (!activeKey) return <Login onPick={(k) => setActiveKey(k)} />;
+  const handleAuth = async (name: string, email: string, password: string, mode: "login" | "signup") => {
+    if (mode === "signup") return auth.signup(name, email, password, "maya");
+    return auth.login(email, password);
+  };
 
-  if (!onboardedKeys.has(activeKey)) {
+  // Loading session
+  if (auth.loading) {
     return (
-      <Onboarding
-        onDone={() =>
-          setOnboardedKeys((prev) => {
-            const next = new Set(prev);
-            next.add(activeKey);
-            return next;
-          })
-        }
-      />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <span className="text-sm">Loading…</span>
+        </div>
+      </div>
     );
+  }
+
+  // Not authenticated
+  if (!auth.user) {
+    return <AuthScreen onAuth={handleAuth} error={auth.error} loading={auth.loading} />;
+  }
+
+  // Onboarding (first time after signup)
+  if (!onboarded) {
+    return <Onboarding onDone={() => setOnboarded(true)} />;
   }
 
   return (
     <main className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5 mx-auto max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{ background: "var(--gradient-brand)" }}
-          >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "var(--gradient-brand)" }}>
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
             <h1 className="font-display text-lg lg:text-xl font-bold leading-none">Nearbeat</h1>
-            <p className="text-[10px] lg:text-xs text-muted-foreground">Your city pulse</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">Hi, {auth.user.name.split(" ")[0]}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -94,37 +109,32 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setActiveKey(null)}
+            onClick={auth.logout}
             className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground"
-            title="Switch account"
+            title="Sign out"
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs">Switch user</span>
+            <span className="hidden sm:inline text-xs">Sign out</span>
           </Button>
         </div>
       </header>
 
-      <section
-        key={persona.key}
-        className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]"
-      >
-        {/* LEFT — context + agent panel */}
+      {/* Persona switcher */}
+      <div className="mb-5">
+        <PersonaSwitcher active={activeKey ?? "maya"} onChange={handlePersonaChange} />
+      </div>
+
+      <section key={persona.key} className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]">
+        {/* LEFT */}
         <div className="space-y-4 lg:space-y-5 lg:sticky lg:top-5 lg:self-start">
           <ContextBar persona={persona} time={time} />
-
           <div>
             <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Live signals
-              </span>
-              <span className="hidden lg:inline text-[10px] text-muted-foreground">
-                Heartbeat active
-              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Live signals</span>
+              <span className="hidden lg:inline text-[10px] text-muted-foreground">Heartbeat active</span>
             </div>
             <IntegrationStatusBar />
           </div>
-
-          {/* Agent panel */}
           <AgentThinking
             steps={agent.steps}
             loading={agent.loading}
@@ -138,11 +148,11 @@ const Index = () => {
           />
         </div>
 
-        {/* RIGHT — offers */}
+        {/* RIGHT */}
         <div>
           <div className="mb-3 flex items-center justify-between px-1">
             <span className="text-[11px] lg:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {agent.result ? "AI-generated offers · just now" : "3 offers for you · just now"}
+              {agent.result ? "AI-generated offers · just now" : "3 offers for you"}
             </span>
             {agent.result && (
               <span className="text-[10px] text-muted-foreground">
@@ -150,23 +160,15 @@ const Index = () => {
               </span>
             )}
           </div>
-
           <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             {(agent.loading ? persona.offers : activeOffers).map((o, i) => (
-              <div
-                key={o.merchant_id}
-                className={`fade-up ${agent.loading ? "opacity-40" : ""}`}
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
+              <div key={o.merchant_id} className={`fade-up ${agent.loading ? "opacity-40" : ""}`} style={{ animationDelay: `${i * 80}ms` }}>
                 <OfferCard offer={o} onClaim={handleClaim} index={i} />
               </div>
             ))}
           </div>
-
           <footer className="pt-8 pb-8 text-center">
-            <p className="text-[10px] lg:text-xs text-muted-foreground">
-              Nearbeat
-            </p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">Nearbeat</p>
           </footer>
         </div>
       </section>

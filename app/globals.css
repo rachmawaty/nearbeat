@@ -2,23 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Nearbeat design tokens */
-:root {
-  --nb-bg: #0F172A;
-  --nb-surface: #1E293B;
-  --nb-border: #334155;
-  --nb-muted: #64748B;
-  --nb-text: #F1F5F9;
-  --nb-blue: #3B82F6;
-  --nb-green: #10B981;
+@layer base {
+  /* LIGHT THEME (default :root) */
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 91% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 94%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 217 33% 94%;
+    --muted-foreground: 215 16% 40%;
+
+    --accent: 217 33% 92%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 25% 88%;
+    --input: 217 25% 88%;
+    --ring: 217 91% 55%;
+
+    --radius: 1rem;
+
+    --signal-route: 217 91% 55%;
+    --signal-schedule: 258 80% 58%;
+    --signal-habit: 38 92% 45%;
+    --signal-weather: 0 80% 55%;
+    --signal-spend: 160 84% 35%;
+    --signal-health: 173 80% 36%;
+    --signal-email: 239 75% 60%;
+
+    --offer-green: 160 84% 35%;
+
+    --gradient-pulse: radial-gradient(120% 80% at 50% 0%, hsl(217 91% 60% / 0.10), transparent 60%);
+    --gradient-offer: linear-gradient(135deg, hsl(217 91% 60% / 0.07), hsl(258 90% 66% / 0.05));
+    --gradient-brand: linear-gradient(135deg, hsl(217 91% 55%), hsl(258 80% 60%));
+    --shadow-card: 0 10px 30px -12px hsl(222 47% 30% / 0.18);
+    --shadow-glow: 0 0 0 1px hsl(217 91% 55% / 0.3), 0 12px 40px -12px hsl(217 91% 55% / 0.35);
+    --transition-smooth: 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* DARK THEME */
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 22%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 70%;
+
+    --accent: 217 33% 24%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 24%;
+    --input: 217 33% 22%;
+    --ring: 217 91% 60%;
+
+    --signal-route: 217 91% 60%;
+    --signal-schedule: 258 90% 66%;
+    --signal-habit: 38 92% 50%;
+    --signal-weather: 0 84% 60%;
+    --signal-spend: 160 84% 39%;
+    --signal-health: 173 80% 40%;
+    --signal-email: 239 84% 67%;
+
+    --offer-green: 160 84% 39%;
+
+    --gradient-pulse: radial-gradient(120% 80% at 50% 0%, hsl(217 91% 60% / 0.18), transparent 60%);
+    --gradient-offer: linear-gradient(135deg, hsl(217 91% 60% / 0.12), hsl(258 90% 66% / 0.08));
+    --gradient-brand: linear-gradient(135deg, hsl(217 91% 60%), hsl(258 90% 66%));
+    --shadow-card: 0 10px 30px -10px hsl(222 47% 4% / 0.6);
+    --shadow-glow: 0 0 0 1px hsl(217 91% 60% / 0.35), 0 12px 40px -12px hsl(217 91% 60% / 0.45);
+  }
 }
 
-body {
-  background-color: var(--nb-bg);
-  color: var(--nb-text);
-  font-family: Arial, sans-serif;
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    background-image: var(--gradient-pulse);
+    background-attachment: fixed;
+    transition: background-color 240ms ease, color 240ms ease;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
 }
 
-* {
-  box-sizing: border-box;
+@layer utilities {
+  .pulse-dot { position: relative; }
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    background: currentColor;
+    opacity: 0.35;
+    animation: nb-pulse 2s ease-out infinite;
+  }
+  @keyframes nb-pulse {
+    0% { transform: scale(0.6); opacity: 0.5; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06), transparent);
+    background-size: 200% 100%;
+    animation: nb-shimmer 1.6s linear infinite;
+  }
+  @keyframes nb-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .fade-up { animation: nb-fade-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes nb-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }

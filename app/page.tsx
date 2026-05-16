@@ -1,203 +1,138 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ContextBar } from "@/components/ContextBar";
-import { OfferFeed } from "@/components/OfferFeed";
-import { PersonaSwitcher } from "@/components/PersonaSwitcher";
-import { ClaimModal } from "@/components/ClaimModal";
-import { ContextEditor, ContextOverrides } from "@/components/ContextEditor";
-import { Offer, OfferResponse, PersonaKey } from "@/lib/types";
-import { personas } from "@/data/personas";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { PERSONAS, type Offer } from "@/data/nearbeat";
+import { ContextBar } from "@/components/nearbeat/ContextBar";
+import { IntegrationStatusBar } from "@/components/nearbeat/IntegrationStatusBar";
+import { OfferCard } from "@/components/nearbeat/OfferCard";
+import { LiveContextDrawer } from "@/components/nearbeat/LiveContextDrawer";
+import { Login } from "@/components/nearbeat/Login";
+import { ThemeToggle } from "@/components/nearbeat/ThemeToggle";
+import { AgentThinking } from "@/components/nearbeat/AgentThinking";
+import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
+import { useAgent } from "@/hooks/useAgent";
+import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { Sparkles, LogOut } from "lucide-react";
 
-const CONNECTION_LABELS: Record<string, string> = {
-  email: "📧 Gmail",
-  bank: "🏦 Bank",
-  maps: "📍 Maps",
-};
-
-async function fetchOffers(personaKey: PersonaKey, contextOverrides?: ContextOverrides): Promise<OfferResponse> {
-  const res = await fetch("/api/offers", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ personaKey, contextOverrides }),
-  });
-  if (!res.ok) throw new Error("Failed to fetch offers");
-  return res.json();
+function formatTime(d: Date) {
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
 export default function Home() {
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
-  const [activePersona, setActivePersona] = useState<PersonaKey>("maya");
-  const [connections, setConnections] = useState<string[]>([]);
-  const [cache, setCache] = useState<Partial<Record<PersonaKey, Offer[]>>>({});
-  const [loading, setLoading] = useState(true);
-  const [claimedOffer, setClaimedOffer] = useState<Offer | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [overrides, setOverrides] = useState<ContextOverrides>({});
-  const loadingSet = useRef<Set<PersonaKey>>(new Set());
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [time, setTime] = useState(() => formatTime(new Date()));
+
+  const agent = useAgent();
+
+  const persona = useMemo(
+    () => PERSONAS.find((p) => p.key === activeKey) ?? PERSONAS[0],
+    [activeKey]
+  );
+
+  const activeOffers: Offer[] = agent.result?.offers ?? persona.offers;
+
+  const runAgent = useCallback(() => { agent.run(persona); }, [agent, persona]);
+
+  const heartbeat = useHeartbeat(
+    useCallback(() => {}, []),
+    15
+  );
 
   useEffect(() => {
-    const persona = localStorage.getItem("nb_persona") as PersonaKey | null;
-    if (!persona || !(persona in personas)) {
-      router.replace("/auth/signin");
-      return;
-    }
-    const conns = JSON.parse(localStorage.getItem("nb_connections") ?? "[]");
-    setActivePersona(persona);
-    setConnections(conns);
-    setReady(true);
-  }, [router]);
+    const id = setInterval(() => setTime(formatTime(new Date())), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
-  const loadPersona = async (key: PersonaKey, forceOverrides?: ContextOverrides) => {
-    if (!forceOverrides && (cache[key] || loadingSet.current.has(key))) return;
-    loadingSet.current.add(key);
-    try {
-      const data = await fetchOffers(key, forceOverrides);
-      setCache((prev) => ({ ...prev, [key]: data.offers }));
-    } finally {
-      loadingSet.current.delete(key);
-    }
-  };
+  useEffect(() => { agent.reset(); }, [activeKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (!ready) return;
-    const init = async () => {
-      setLoading(true);
-      await loadPersona(activePersona);
-      setLoading(false);
-      const others = (["maya", "carlos", "priya"] as PersonaKey[]).filter((k) => k !== activePersona);
-      Promise.all(others.map((k) => loadPersona(k)));
-    };
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
-
-  const handlePersonaChange = (key: PersonaKey) => {
-    setActivePersona(key);
-    setOverrides({});
-    if (!cache[key]) {
-      setLoading(true);
-      loadPersona(key).then(() => setLoading(false));
-    }
-  };
-
-  const handleRegenerate = async () => {
-    setCache((prev) => ({ ...prev, [activePersona]: undefined }));
-    loadingSet.current.delete(activePersona);
-    setLoading(true);
-    await loadPersona(activePersona, Object.keys(overrides).length ? overrides : undefined);
-    setLoading(false);
-  };
-
-  const handleApplyOverrides = async (newOverrides: ContextOverrides) => {
-    setOverrides(newOverrides);
-    setCache((prev) => ({ ...prev, [activePersona]: undefined }));
-    loadingSet.current.delete(activePersona);
-    setLoading(true);
-    await loadPersona(activePersona, Object.keys(newOverrides).length ? newOverrides : undefined);
-    setLoading(false);
-  };
-
-  const handleSignOut = () => {
-    localStorage.removeItem("nb_persona");
-    localStorage.removeItem("nb_connections");
-    router.push("/auth/signin");
-  };
-
-  if (!ready) return null;
-
-  const currentOffers = cache[activePersona] ?? null;
-  const isLoading = loading && !currentOffers;
-  const hasOverrides = Object.keys(overrides).length > 0;
+  if (!activeKey) return <Login onPick={(k) => setActiveKey(k)} />;
 
   return (
-    <main className="min-h-screen max-w-md mx-auto relative pb-32">
+    <main className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5 mx-auto max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
       {/* Header */}
-      <div className="px-4 pt-6 pb-2 flex items-center justify-between">
-        <div>
-          <span className="text-2xl font-bold" style={{ color: "var(--nb-blue)" }}>nearbeat</span>
-          <span className="text-xs ml-2" style={{ color: "var(--nb-muted)" }}>your city pulse</span>
-        </div>
+      <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "var(--gradient-brand)" }}>
+            <Sparkles className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-lg lg:text-xl font-bold leading-none">Nearbeat</h1>
+            <p className="text-[10px] lg:text-xs text-muted-foreground">Your city pulse</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <LiveContextDrawer persona={persona} />
+          <ThemeToggle />
           <button
-            onClick={() => setShowEditor(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{
-              backgroundColor: hasOverrides ? "rgba(59,130,246,0.15)" : "var(--nb-surface)",
-              color: hasOverrides ? "var(--nb-blue)" : "var(--nb-muted)",
-              border: `1px solid ${hasOverrides ? "var(--nb-blue)" : "var(--nb-border)"}`,
-            }}
+            onClick={() => setActiveKey(null)}
+            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            title="Switch account"
           >
-            {hasOverrides ? "✦ Custom" : "⚙ Context"}
-          </button>
-          <button
-            onClick={handleSignOut}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ backgroundColor: "var(--nb-surface)", color: "var(--nb-muted)", border: "1px solid var(--nb-border)" }}
-          >
-            Switch
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Switch</span>
           </button>
         </div>
+      </header>
+
+      {/* Persona switcher */}
+      <div className="mb-5">
+        <PersonaSwitcher active={activeKey} onChange={(k) => setActiveKey(k)} />
       </div>
 
-      {/* Connected data pills */}
-      {connections.length > 0 && (
-        <div className="px-4 pt-2 flex gap-2 flex-wrap">
-          {connections.map((c) => (
-            <span
-              key={c}
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)" }}
-            >
-              {CONNECTION_LABELS[c]} ✓
+      <section key={persona.key} className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]">
+        {/* LEFT — context + agent */}
+        <div className="space-y-4 lg:space-y-5 lg:sticky lg:top-5 lg:self-start">
+          <ContextBar persona={persona} time={time} />
+
+          <div>
+            <div className="mb-2 flex items-center justify-between px-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Live signals</span>
+              <span className="hidden lg:inline text-[10px] text-muted-foreground">Heartbeat active</span>
+            </div>
+            <IntegrationStatusBar />
+          </div>
+
+          <AgentThinking
+            steps={agent.steps}
+            loading={agent.loading}
+            reasoning={agent.result?.agent_reasoning}
+            signals={agent.result?.signals_active}
+            error={agent.error}
+            onRun={runAgent}
+            hasResult={!!agent.result}
+            stale={heartbeat.stale}
+            minutesSince={heartbeat.minutesSince}
+          />
+        </div>
+
+        {/* RIGHT — offers */}
+        <div>
+          <div className="mb-3 flex items-center justify-between px-1">
+            <span className="text-[11px] lg:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {agent.result ? "AI-generated offers · just now" : "3 offers for you"}
             </span>
-          ))}
+            {agent.result && (
+              <span className="text-[10px] text-muted-foreground">
+                ✦ {agent.result._input_tokens + agent.result._output_tokens} tokens
+              </span>
+            )}
+          </div>
+
+          <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {(agent.loading ? persona.offers : activeOffers).map((o, i) => (
+              <div key={o.merchant_id} className={`fade-up ${agent.loading ? "opacity-40" : ""}`} style={{ animationDelay: `${i * 80}ms` }}>
+                <OfferCard offer={o} onClaim={() => {}} index={i} />
+              </div>
+            ))}
+          </div>
+
+          <footer className="pt-8 pb-8 text-center">
+            <p className="text-[10px] lg:text-xs text-muted-foreground">
+              Prototype · MIT AI Hackathon 2026 · Generative City Wallet
+            </p>
+          </footer>
         </div>
-      )}
-
-      {/* Context bar */}
-      <ContextBar personaKey={activePersona} overrides={overrides} />
-
-      {/* Offers label + regenerate */}
-      <div className="px-4 mt-5 mb-3 flex items-center justify-between">
-        <p className="text-[11px] font-bold tracking-widest uppercase" style={{ color: "var(--nb-muted)" }}>
-          Offers for you
-        </p>
-        <button
-          onClick={handleRegenerate}
-          disabled={isLoading}
-          className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-          style={{
-            backgroundColor: "var(--nb-surface)",
-            color: isLoading ? "var(--nb-border)" : "var(--nb-blue)",
-            border: "1px solid var(--nb-border)",
-          }}
-        >
-          <span style={{ display: "inline-block", transform: isLoading ? "rotate(360deg)" : "none", transition: "transform 0.6s" }}>↻</span>
-          Refresh
-        </button>
-      </div>
-
-      <OfferFeed
-        offers={currentOffers}
-        loading={isLoading}
-        context={personas[activePersona]}
-        onClaim={setClaimedOffer}
-      />
-
-      <PersonaSwitcher active={activePersona} onChange={handlePersonaChange} />
-
-      <ClaimModal offer={claimedOffer} onClose={() => setClaimedOffer(null)} />
-
-      {showEditor && (
-        <ContextEditor
-          overrides={overrides}
-          onApply={handleApplyOverrides}
-          onClose={() => setShowEditor(false)}
-        />
-      )}
+      </section>
     </main>
   );
 }

@@ -56,7 +56,7 @@ export function OfferCard({ offer, context, onClaim }: Props) {
 
   return (
     <div
-      className="rounded-2xl p-4 mx-4"
+      className="rounded-2xl p-4"
       style={{
         backgroundColor: "var(--nb-surface)",
         border: "1px solid var(--nb-border)",

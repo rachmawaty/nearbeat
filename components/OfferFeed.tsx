@@ -13,7 +13,7 @@ interface Props {
 function SkeletonCard() {
   return (
     <div
-      className="rounded-2xl p-4 mx-4 animate-pulse"
+      className="rounded-2xl p-4 animate-pulse"
       style={{
         backgroundColor: "var(--nb-surface)",
         border: "1px solid var(--nb-border)",
@@ -34,7 +34,7 @@ function SkeletonCard() {
 export function OfferFeed({ offers, loading, context, onClaim }: Props) {
   if (loading || !offers) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-3 lg:gap-4">
         <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
@@ -43,7 +43,7 @@ export function OfferFeed({ offers, loading, context, onClaim }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-3 lg:gap-4">
       {offers.map((offer) => (
         <OfferCard key={offer.merchant_id} offer={offer} context={context} onClaim={onClaim} />
       ))}

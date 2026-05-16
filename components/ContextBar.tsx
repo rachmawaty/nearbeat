@@ -14,9 +14,10 @@ const weatherIcons: Record<string, string> = {
 interface Props {
   personaKey: PersonaKey;
   overrides?: ContextOverrides;
+  className?: string;
 }
 
-export function ContextBar({ personaKey, overrides = {} }: Props) {
+export function ContextBar({ personaKey, overrides = {}, className = "rounded-xl p-4 mx-4 mt-4" }: Props) {
   const ctx = personas[personaKey];
   const { persona, location, route } = ctx;
 
@@ -27,7 +28,7 @@ export function ContextBar({ personaKey, overrides = {} }: Props) {
 
   return (
     <div
-      className="rounded-xl p-4 mx-4 mt-4"
+      className={className}
       style={{ backgroundColor: "var(--nb-surface)", border: "1px solid var(--nb-border)" }}
     >
       {/* Top row: avatar + name + location */}

@@ -62,12 +62,12 @@ export function ContextEditor({ overrides, onApply, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end justify-center"
+      className="fixed inset-0 z-40 flex items-end lg:items-center justify-center"
       style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-t-2xl p-6 pb-10"
+        className="w-full max-w-md rounded-t-2xl lg:rounded-2xl p-6 pb-10"
         style={{ backgroundColor: "var(--nb-surface)", border: "1px solid var(--nb-border)" }}
         onClick={(e) => e.stopPropagation()}
       >

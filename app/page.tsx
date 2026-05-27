@@ -6,20 +6,19 @@ import { ContextBar } from "@/components/nearbeat/ContextBar";
 import { IntegrationStatusBar } from "@/components/nearbeat/IntegrationStatusBar";
 import { OfferCard } from "@/components/nearbeat/OfferCard";
 import { LiveContextDrawer } from "@/components/nearbeat/LiveContextDrawer";
-import { Login } from "@/components/nearbeat/Login";
 import { ThemeToggle } from "@/components/nearbeat/ThemeToggle";
 import { AgentThinking } from "@/components/nearbeat/AgentThinking";
 import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
 import { useAgent } from "@/hooks/useAgent";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
-import { Sparkles, LogOut } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
 export default function Home() {
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [activeKey, setActiveKey] = useState<string>(PERSONAS[0].key);
   const [time, setTime] = useState(() => formatTime(new Date()));
 
   const agent = useAgent();
@@ -45,8 +44,6 @@ export default function Home() {
 
   useEffect(() => { agent.reset(); }, [activeKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!activeKey) return <Login onPick={(k) => setActiveKey(k)} />;
-
   return (
     <main className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5 mx-auto max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
       {/* Header */}
@@ -63,14 +60,6 @@ export default function Home() {
         <div className="flex items-center gap-1">
           <LiveContextDrawer persona={persona} />
           <ThemeToggle />
-          <button
-            onClick={() => setActiveKey(null)}
-            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title="Switch account"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Switch</span>
-          </button>
         </div>
       </header>
 

@@ -11,6 +11,9 @@ import { AgentThinking } from "@/components/nearbeat/AgentThinking";
 import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
 import { useAgent } from "@/hooks/useAgent";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { useLocation } from "@/hooks/useLocation";
+import { useWeather } from "@/hooks/useWeather";
+import { useCalendar } from "@/hooks/useCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, LogOut } from "lucide-react";
@@ -19,10 +22,21 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const auth = useAuth();
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [onboarded, setOnboarded] = useState(false);
   const [time, setTime] = useState(() => formatTime(new Date()));
 
+  // Refresh user after Google connect redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("connected") === "1") {
+      auth.refreshUser();
+      window.history.replaceState({}, "", "/");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const agent = useAgent();
+  const location = useLocation();
+  const weatherResult = useWeather(location.lat, location.lon);
+  const calendarResult = useCalendar(auth.token ?? null);
 
   // Once user is loaded, default to their saved persona
   useEffect(() => {
@@ -38,7 +52,20 @@ const Index = () => {
 
   const activeOffers: Offer[] = agent.result?.offers ?? persona.offers;
 
-  const runAgent = useCallback(() => { agent.run(persona); }, [agent, persona]);
+  const liveContext = (location.lat !== null && location.lon !== null && weatherResult.weather)
+    ? {
+        lat: location.lat,
+        lon: location.lon,
+        city: weatherResult.weather.city,
+        weather: { temp: weatherResult.weather.temp, label: weatherResult.weather.label },
+        ...(calendarResult.events.length ? { schedule: calendarResult.events } : {}),
+      }
+    : undefined;
+
+  const runAgent = useCallback(
+    () => { agent.run(persona, liveContext); },
+    [agent, persona, liveContext]
+  );
 
   const heartbeat = useHeartbeat(
     useCallback((reason: string) => {
@@ -87,8 +114,16 @@ const Index = () => {
   }
 
   // Onboarding (first time after signup)
-  if (!onboarded) {
-    return <Onboarding onDone={() => setOnboarded(true)} />;
+  if (!auth.user.onboarding_completed) {
+    return (
+      <Onboarding
+        userName={auth.user.name}
+        token={auth.token}
+        onDone={async (profile) => {
+          await auth.saveProfile(profile);
+        }}
+      />
+    );
   }
 
   return (
@@ -127,7 +162,12 @@ const Index = () => {
       <section key={persona.key} className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]">
         {/* LEFT */}
         <div className="space-y-4 lg:space-y-5 lg:sticky lg:top-5 lg:self-start">
-          <ContextBar persona={persona} time={time} />
+          <ContextBar
+            persona={persona}
+            time={time}
+            liveWeather={weatherResult.weather}
+            liveCity={weatherResult.weather?.city ?? null}
+          />
           <div>
             <div className="mb-2 flex items-center justify-between px-1">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Live signals</span>

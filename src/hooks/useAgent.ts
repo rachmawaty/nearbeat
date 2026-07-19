@@ -12,12 +12,20 @@ export interface AgentResult {
   _output_tokens: number;
 }
 
+export interface LiveContext {
+  lat: number;
+  lon: number;
+  city: string;
+  weather: { temp: number; label: string };
+  schedule?: { time: string; event: string; location?: string }[];
+}
+
 export interface UseAgentReturn {
   result: AgentResult | null;
   loading: boolean;
   error: string | null;
   steps: AgentStep[];
-  run: (persona: Persona) => Promise<void>;
+  run: (persona: Persona, liveContext?: LiveContext) => Promise<void>;
   reset: () => void;
 }
 
@@ -29,7 +37,7 @@ export function useAgent(): UseAgentReturn {
   const [error, setError] = useState<string | null>(null);
   const [steps, setSteps] = useState<AgentStep[]>([]);
 
-  const run = useCallback(async (persona: Persona) => {
+  const run = useCallback(async (persona: Persona, liveContext?: LiveContext) => {
     setLoading(true);
     setError(null);
     setSteps([]);
@@ -38,7 +46,7 @@ export function useAgent(): UseAgentReturn {
       const res = await fetch(AGENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ persona }),
+        body: JSON.stringify({ persona, liveContext }),
       });
 
       if (!res.ok) {

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/nearbeat/ThemeProvider";
 import Index from "./pages/Index.tsx";
 import DemoLanding from "./pages/DemoLanding.tsx";
 import DemoUser from "./pages/DemoUser.tsx";
+import AuthCallback from "./pages/AuthCallback.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/demo" element={<DemoLanding />} />
             <Route path="/demo/:personaKey" element={<DemoUser />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

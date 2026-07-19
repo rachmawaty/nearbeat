@@ -5,6 +5,16 @@ export interface AuthUser {
   name: string;
   email: string;
   persona_key: string;
+  occupation: string | null;
+  age_bracket: string | null;
+  neighborhood: string | null;
+  city: string;
+  time_of_day_label: string;
+  spend_categories: string[];
+  avg_transaction: string;
+  location_granted: boolean;
+  google_connected: boolean;
+  onboarding_completed: boolean;
 }
 
 interface AuthState {
@@ -24,7 +34,6 @@ export function useAuth() {
     error: null,
   });
 
-  // Restore session on mount
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return;
@@ -80,5 +89,25 @@ export function useAuth() {
     setState((s) => s.user ? { ...s, user: { ...s.user, persona_key } } : s);
   }, []);
 
-  return { ...state, signup, login, logout, updatePersona };
+  const saveProfile = useCallback(async (profile: Partial<AuthUser> & { location_granted?: boolean }) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const res = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(profile),
+    });
+    const updated = await res.json();
+    setState((s) => s.user ? { ...s, user: { ...s.user, ...updated } } : s);
+    return res.ok;
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+    const res = await fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } });
+    const { user } = await res.json();
+    if (user) setState((s) => ({ ...s, user }));
+  }, []);
+
+  return { ...state, signup, login, logout, updatePersona, saveProfile, refreshUser };
 }

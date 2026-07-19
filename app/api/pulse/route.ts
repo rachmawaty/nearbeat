@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Persona, Offer } from "@/data/nearbeat";
+import type { LiveContext } from "@/hooks/useAgent";
 
 const client = new Anthropic();
 
@@ -34,11 +35,20 @@ Return JSON only, no markdown:
 }`;
 
 export async function POST(req: NextRequest) {
-  const { persona } = await req.json() as { persona: Persona };
+  const { persona, liveContext } = await req.json() as { persona: Persona; liveContext?: LiveContext };
 
   if (!persona?.key) {
     return NextResponse.json({ error: "Missing persona" }, { status: 400 });
   }
+
+  const enrichedPersona = liveContext
+    ? {
+        ...persona,
+        area: liveContext.city || persona.area,
+        weather: { ...persona.weather, temp: liveContext.weather.temp, label: liveContext.weather.label },
+        _live_signals: { lat: liveContext.lat, lon: liveContext.lon },
+      }
+    : persona;
 
   const startTokens = { input: 0, output: 0 };
 
@@ -47,7 +57,7 @@ export async function POST(req: NextRequest) {
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: JSON.stringify(persona) }],
+      messages: [{ role: "user", content: JSON.stringify(enrichedPersona) }],
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";

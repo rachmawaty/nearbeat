@@ -11,6 +11,8 @@ import { AgentThinking } from "@/components/nearbeat/AgentThinking";
 import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
 import { useAgent } from "@/hooks/useAgent";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { useLocation } from "@/hooks/useLocation";
+import { useWeather } from "@/hooks/useWeather";
 import { Sparkles } from "lucide-react";
 
 function formatTime(d: Date) {
@@ -22,6 +24,8 @@ export default function Home() {
   const [time, setTime] = useState(() => formatTime(new Date()));
 
   const agent = useAgent();
+  const location = useLocation();
+  const weatherResult = useWeather(location.lat, location.lon);
 
   const persona = useMemo(
     () => PERSONAS.find((p) => p.key === activeKey) ?? PERSONAS[0],
@@ -30,7 +34,19 @@ export default function Home() {
 
   const activeOffers: Offer[] = agent.result?.offers ?? persona.offers;
 
-  const runAgent = useCallback(() => { agent.run(persona); }, [agent, persona]);
+  const liveContext = (location.lat !== null && location.lon !== null && weatherResult.weather)
+    ? {
+        lat: location.lat,
+        lon: location.lon,
+        city: weatherResult.weather.city,
+        weather: { temp: weatherResult.weather.temp, label: weatherResult.weather.label },
+      }
+    : undefined;
+
+  const runAgent = useCallback(
+    () => { agent.run(persona, liveContext); },
+    [agent, persona, liveContext]
+  );
 
   const heartbeat = useHeartbeat(
     useCallback(() => {}, []),
@@ -71,7 +87,12 @@ export default function Home() {
       <section key={persona.key} className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]">
         {/* LEFT — context + agent */}
         <div className="space-y-4 lg:space-y-5 lg:sticky lg:top-5 lg:self-start">
-          <ContextBar persona={persona} time={time} />
+          <ContextBar
+            persona={persona}
+            time={time}
+            liveWeather={weatherResult.weather}
+            liveCity={weatherResult.weather?.city ?? null}
+          />
 
           <div>
             <div className="mb-2 flex items-center justify-between px-1">

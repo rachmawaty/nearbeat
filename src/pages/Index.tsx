@@ -8,7 +8,6 @@ import { Onboarding } from "@/components/nearbeat/Onboarding";
 import { AuthScreen } from "@/components/nearbeat/AuthScreen";
 import { ThemeToggle } from "@/components/nearbeat/ThemeToggle";
 import { AgentThinking } from "@/components/nearbeat/AgentThinking";
-import { PersonaSwitcher } from "@/components/nearbeat/PersonaSwitcher";
 import { useAgent } from "@/hooks/useAgent";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
 import { useLocation } from "@/hooks/useLocation";
@@ -21,7 +20,6 @@ import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const auth = useAuth();
-  const [activeKey, setActiveKey] = useState<string | null>(null);
   const [time, setTime] = useState(() => formatTime(new Date()));
 
   // Refresh user after Google connect redirect
@@ -38,17 +36,20 @@ const Index = () => {
   const weatherResult = useWeather(location.lat, location.lon);
   const calendarResult = useCalendar(auth.token ?? null);
 
-  // Once user is loaded, default to their saved persona
-  useEffect(() => {
-    if (auth.user && !activeKey) {
-      setActiveKey(auth.user.persona_key);
-    }
+  // Build persona from user's real profile + base archetype for avatar/offers
+  const persona = useMemo(() => {
+    const base = PERSONAS.find((p) => p.key === (auth.user?.persona_key ?? "maya")) ?? PERSONAS[0];
+    if (!auth.user) return base;
+    return {
+      ...base,
+      name: auth.user.name,
+      occupation: auth.user.occupation ?? base.occupation,
+      subtitle: [auth.user.occupation, auth.user.neighborhood ?? auth.user.city]
+        .filter(Boolean).join(" · ") || base.subtitle,
+      city: auth.user.city ?? base.city,
+      area: auth.user.neighborhood ?? auth.user.city ?? base.area,
+    };
   }, [auth.user]);
-
-  const persona = useMemo(
-    () => PERSONAS.find((p) => p.key === activeKey) ?? PERSONAS[0],
-    [activeKey],
-  );
 
   const activeOffers: Offer[] = agent.result?.offers ?? persona.offers;
 
@@ -69,9 +70,9 @@ const Index = () => {
 
   const heartbeat = useHeartbeat(
     useCallback((reason: string) => {
-      if (!activeKey) return;
+      if (!auth.user) return;
       toast({ title: "Context updated", description: reason });
-    }, [activeKey]),
+    }, [auth.user]),
     15
   );
 
@@ -80,12 +81,7 @@ const Index = () => {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => { agent.reset(); }, [activeKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handlePersonaChange = (key: string) => {
-    setActiveKey(key);
-    auth.updatePersona(key);
-  };
+  useEffect(() => { agent.reset(); }, [auth.user?.persona_key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClaim = (o: Offer) => {
     toast({ title: `${o.merchant_name} — claimed`, description: o.offer });
@@ -153,11 +149,6 @@ const Index = () => {
           </Button>
         </div>
       </header>
-
-      {/* Persona switcher */}
-      <div className="mb-5">
-        <PersonaSwitcher active={activeKey ?? "maya"} onChange={handlePersonaChange} />
-      </div>
 
       <section key={persona.key} className="fade-up grid gap-5 lg:gap-8 lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr]">
         {/* LEFT */}

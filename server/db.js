@@ -53,5 +53,22 @@ export async function initDb() {
     try { await pool.query(sql); } catch { /* column already exists or constraint already dropped */ }
   }
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS merchants (
+      id          TEXT PRIMARY KEY,
+      name        TEXT NOT NULL,
+      emoji       TEXT NOT NULL DEFAULT '🏪',
+      category    TEXT NOT NULL,
+      address     TEXT,
+      area        TEXT NOT NULL,
+      city        TEXT NOT NULL,
+      distance_m  INTEGER DEFAULT 300,
+      eta_min     INTEGER DEFAULT 6,
+      avg_spend   NUMERIC(12,2) DEFAULT 15,
+      currency    TEXT DEFAULT 'USD',
+      created_at  TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
   console.log("[db] schema ready");
 }

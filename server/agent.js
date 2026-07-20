@@ -14,11 +14,12 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        city: { type: "string", description: "User's current city (e.g. Cambridge, Boston, Longwood)" },
+        city: { type: "string", description: "User's current city (e.g. Cambridge, Jakarta, Lawrence)" },
+        area: { type: "string", description: "Neighbourhood or district within the city (e.g. Kendall Square, SCBD, Tebet, Downtown Lawrence)" },
         categories: {
           type: "array",
           items: { type: "string" },
-          description: "Merchant categories to prioritize (coffee, dining, wellness, retail, gas, groceries, accessories, health)",
+          description: "Merchant categories to prioritize (coffee, dining, wellness, retail, groceries, health)",
         },
       },
       required: ["city"],
@@ -97,9 +98,9 @@ Output format (exactly):
 // ---------------------------------------------------------------------------
 // Tool dispatcher
 // ---------------------------------------------------------------------------
-function callTool(name, input) {
+async function callTool(name, input) {
   switch (name) {
-    case "get_merchants_nearby":   return get_merchants_nearby(input);
+    case "get_merchants_nearby":   return await get_merchants_nearby(input);
     case "get_live_weather":       return get_live_weather(input);
     case "score_signal_relevance": return score_signal_relevance(input);
     default: return { error: `Unknown tool: ${name}` };
@@ -136,7 +137,7 @@ export async function runNearbeatAgent(personaContext) {
     // Execute all tool calls in parallel
     const toolResults = await Promise.all(
       toolUseBlocks.map(async (block) => {
-        const result = callTool(block.name, block.input);
+        const result = await callTool(block.name, block.input);
         steps.push({ tool: block.name, input: block.input, result });
         return {
           type: "tool_result",

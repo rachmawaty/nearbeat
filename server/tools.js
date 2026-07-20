@@ -1,42 +1,4 @@
-/**
- * Nearbeat Agent Tools
- * These are the real-world data tools the agent calls during its reasoning loop.
- * In production each tool hits a live API; in this prototype they return
- * rich, realistic mock data that mirrors what the real integration would return.
- */
-
-// ---------------------------------------------------------------------------
-// Merchant catalog — keyed by neighborhood
-// ---------------------------------------------------------------------------
-const MERCHANTS = {
-  Cambridge: [
-    { id: "cafe-rossa", name: "Cafe Rossa", emoji: "☕", category: "coffee", address: "18 Hampshire St", distance_m: 320, eta_min: 6, avg_spend: 6.5 },
-    { id: "gymfuel", name: "GymFuel", emoji: "🥤", category: "wellness", address: "Next to GymFuel Kendall", distance_m: 40, eta_min: 0, avg_spend: 9 },
-    { id: "area-four", name: "Area Four", emoji: "🍕", category: "dining", address: "500 Technology Sq", distance_m: 500, eta_min: 10, avg_spend: 22 },
-    { id: "tatte-kendall", name: "Tatte Bakery", emoji: "🥐", category: "coffee", address: "Cambridge St", distance_m: 280, eta_min: 5, avg_spend: 11 },
-    { id: "clover-kendall", name: "Clover Food Lab", emoji: "🥗", category: "dining", address: "Kendall Sq", distance_m: 350, eta_min: 7, avg_spend: 14 },
-    { id: "umbrella-co", name: "The Umbrella Co.", emoji: "☂️", category: "accessories", address: "2 min off route", distance_m: 180, eta_min: 4, avg_spend: 20 },
-    { id: "cvs-kendall", name: "CVS Pharmacy", emoji: "💊", category: "health", address: "Kendall Sq", distance_m: 200, eta_min: 4, avg_spend: 15 },
-    { id: "flour-cambridge", name: "Flour Bakery", emoji: "🍞", category: "coffee", address: "190 Massachusetts Ave", distance_m: 600, eta_min: 12, avg_spend: 9 },
-  ],
-  "Back Bay": [
-    { id: "bluestone", name: "Bluestone Lane", emoji: "☕", category: "coffee", address: "Boston", distance_m: 220, eta_min: 5, avg_spend: 7 },
-    { id: "mooo", name: "Mooo....", emoji: "🥩", category: "dining", address: "15 Beacon St", distance_m: 0, eta_min: 25, avg_spend: 85 },
-    { id: "shell-boylston", name: "Shell — Boylston", emoji: "⛽", category: "gas", address: "Boylston St", distance_m: 90, eta_min: 2, avg_spend: 55 },
-    { id: "trident-books", name: "Trident Booksellers", emoji: "📖", category: "retail", address: "338 Newbury St", distance_m: 410, eta_min: 8, avg_spend: 24 },
-    { id: "sweetgreen-bb", name: "Sweetgreen", emoji: "🥗", category: "dining", address: "Newbury St", distance_m: 300, eta_min: 6, avg_spend: 16 },
-    { id: "lululemon", name: "Lululemon", emoji: "🏃", category: "wellness", address: "Newbury St", distance_m: 350, eta_min: 7, avg_spend: 110 },
-    { id: "soulcycle-bb", name: "SoulCycle", emoji: "🚴", category: "wellness", address: "Exeter St", distance_m: 450, eta_min: 9, avg_spend: 40 },
-  ],
-  Longwood: [
-    { id: "tatte-long", name: "Tatte Bakery", emoji: "🥐", category: "coffee", address: "Longwood Ave", distance_m: 280, eta_min: 6, avg_spend: 11 },
-    { id: "juicepress", name: "Juice Press", emoji: "🥬", category: "wellness", address: "Near CorePower", distance_m: 60, eta_min: 1, avg_spend: 12 },
-    { id: "corepower", name: "CorePower Yoga", emoji: "🧘", category: "wellness", address: "Longwood", distance_m: 80, eta_min: 1, avg_spend: 35 },
-    { id: "trident-long", name: "Trident Booksellers", emoji: "📖", category: "retail", address: "Near Countway", distance_m: 410, eta_min: 9, avg_spend: 24 },
-    { id: "harvest-coop", name: "Harvest Co-op", emoji: "🥬", category: "groceries", address: "South End", distance_m: 550, eta_min: 11, avg_spend: 45 },
-    { id: "pavement-long", name: "Pavement Coffeehouse", emoji: "☕", category: "coffee", address: "Longwood Ave", distance_m: 320, eta_min: 6, avg_spend: 6 },
-  ],
-};
+import { pool } from "./db.js";
 
 // ---------------------------------------------------------------------------
 // Tool implementations
@@ -44,14 +6,30 @@ const MERCHANTS = {
 
 /**
  * get_merchants_nearby
- * Returns merchants near the user's current area, optionally filtered by category.
+ * Queries the merchants table filtered by city and optional area/categories.
  */
-export function get_merchants_nearby({ city, categories }) {
-  const all = MERCHANTS[city] ?? MERCHANTS["Cambridge"];
-  const merchants = categories && categories.length > 0
-    ? all.filter((m) => categories.some((c) => m.category.includes(c.toLowerCase())))
-    : all;
-  return { merchants: merchants.slice(0, 8), city, timestamp: new Date().toISOString() };
+export async function get_merchants_nearby({ city, area, categories }) {
+  try {
+    let query = "SELECT * FROM merchants WHERE LOWER(city) = LOWER($1)";
+    const params = [city];
+
+    if (area) {
+      params.push(area);
+      query += ` AND LOWER(area) = LOWER($${params.length})`;
+    }
+
+    query += " ORDER BY distance_m ASC LIMIT 12";
+    const { rows } = await pool.query(query, params);
+
+    const merchants = categories?.length
+      ? rows.filter((m) => categories.some((c) => m.category.toLowerCase().includes(c.toLowerCase())))
+      : rows;
+
+    return { merchants: merchants.slice(0, 8), city, area: area ?? null, timestamp: new Date().toISOString() };
+  } catch (err) {
+    console.error("[get_merchants_nearby] DB error:", err.message);
+    return { merchants: [], city, error: err.message, timestamp: new Date().toISOString() };
+  }
 }
 
 /**
@@ -62,10 +40,10 @@ export function get_merchants_nearby({ city, categories }) {
 export function get_live_weather({ city }) {
   const conditions = {
     Cambridge: { condition: "Light rain incoming", temp_c: 14, emoji: "🌦️", code: "rain", advisory: "Bring an umbrella — precipitation in 20 min" },
-    Boston:    { condition: "Sunny and clear",     temp_c: 19, emoji: "☀️",  code: "sunny", advisory: "Great day to walk" },
-    Longwood:  { condition: "Cloudy, mild",         temp_c: 17, emoji: "☁️",  code: "cloudy", advisory: "Comfortable outdoors" },
+    Lawrence:  { condition: "Partly cloudy",       temp_c: 18, emoji: "⛅",  code: "cloudy", advisory: "Comfortable outdoors" },
+    Jakarta:   { condition: "Hot and humid",        temp_c: 32, emoji: "🌤️", code: "sunny", advisory: "Stay hydrated" },
   };
-  return conditions[city] ?? conditions["Boston"];
+  return conditions[city] ?? { condition: "Clear", temp_c: 20, emoji: "☀️", code: "sunny", advisory: "Nice day" };
 }
 
 /**

@@ -1,0 +1,63 @@
+id,name,emoji,category,address,area,city,distance_m,eta_min,avg_spend,currency,created_at
+tatte-kendall,Tatte Bakery & Cafe,🥐,coffee,"318 Third St, Cambridge, MA",Kendall Square,Cambridge,210,4,12.00,USD,2026-07-20 19:59:32.551378+00
+area-four,Area Four,🍕,dining,"500 Technology Square, Cambridge, MA",Kendall Square,Cambridge,380,7,22.00,USD,2026-07-20 19:59:32.556958+00
+cava-kendall,Cava,🥗,dining,"300 Broad Canal Way, Cambridge, MA",Kendall Square,Cambridge,290,5,15.00,USD,2026-07-20 19:59:32.558882+00
+clover-kendall,Clover Food Lab,🌿,dining,"5 Cambridge Center, Cambridge, MA",Kendall Square,Cambridge,160,3,13.00,USD,2026-07-20 19:59:32.561245+00
+cvs-kendall,CVS Pharmacy,💊,health,"250 Main St, Cambridge, MA",Kendall Square,Cambridge,340,6,18.00,USD,2026-07-20 19:59:32.564043+00
+equinox-kendall,Equinox Kendall Square,🏋️,wellness,"145 Broadway, Cambridge, MA",Kendall Square,Cambridge,420,8,35.00,USD,2026-07-20 19:59:32.566289+00
+tatte-harvard,Tatte Bakery & Cafe,🥐,coffee,"1288 Massachusetts Ave, Cambridge, MA",Harvard Square,Cambridge,180,3,12.00,USD,2026-07-20 19:59:32.568918+00
+flour-bakery-harvard,Flour Bakery + Cafe,☕,coffee,"1595 Washington St, Cambridge, MA",Harvard Square,Cambridge,310,6,11.00,USD,2026-07-20 19:59:32.57108+00
+harvest-restaurant,Harvest,🍽️,dining,"44 Brattle St, Cambridge, MA",Harvard Square,Cambridge,250,5,55.00,USD,2026-07-20 19:59:32.573778+00
+harvard-book-store,Harvard Book Store,📚,retail,"1256 Massachusetts Ave, Cambridge, MA",Harvard Square,Cambridge,200,4,22.00,USD,2026-07-20 19:59:32.575942+00
+trader-joes-harvard,Trader Joe's,🛒,groceries,"748 Memorial Dr, Cambridge, MA",Harvard Square,Cambridge,480,9,45.00,USD,2026-07-20 19:59:32.57786+00
+jp-licks-harvard,JP Licks,🍦,dining,"1312 Massachusetts Ave, Cambridge, MA",Harvard Square,Cambridge,220,4,7.00,USD,2026-07-20 19:59:32.57968+00
+darwins-ltd,Darwin's Ltd,🥪,coffee,"148 Mount Auburn St, Cambridge, MA",Harvard Square,Cambridge,360,7,14.00,USD,2026-07-20 19:59:32.582417+00
+central-kitchen,Central Kitchen,🍷,dining,"567 Massachusetts Ave, Cambridge, MA",Central Square,Cambridge,270,5,38.00,USD,2026-07-20 19:59:32.584711+00
+1369-coffee-central,1369 Coffee House,☕,coffee,"757 Massachusetts Ave, Cambridge, MA",Central Square,Cambridge,190,4,9.00,USD,2026-07-20 19:59:32.58666+00
+middle-east-cambridge,The Middle East,🎵,dining,"472 Massachusetts Ave, Cambridge, MA",Central Square,Cambridge,310,6,20.00,USD,2026-07-20 19:59:32.588897+00
+whole-foods-central,Whole Foods Market,🥦,groceries,"340 River St, Cambridge, MA",Central Square,Cambridge,550,10,52.00,USD,2026-07-20 19:59:32.590609+00
+cvs-central,CVS Pharmacy,💊,health,"625 Massachusetts Ave, Cambridge, MA",Central Square,Cambridge,240,5,16.00,USD,2026-07-20 19:59:32.592695+00
+cambridge-yoga,Cambridge Yoga,🧘,wellness,"590 Massachusetts Ave, Cambridge, MA",Central Square,Cambridge,280,5,28.00,USD,2026-07-20 19:59:32.594426+00
+1369-coffee-inman,1369 Coffee House,☕,coffee,"1369 Cambridge St, Cambridge, MA",Inman Square,Cambridge,150,3,8.00,USD,2026-07-20 19:59:32.596338+00
+bukowski-tavern,Bukowski Tavern,🍺,dining,"1281 Cambridge St, Cambridge, MA",Inman Square,Cambridge,320,6,18.00,USD,2026-07-20 19:59:32.597838+00
+oleana,Oleana,🍽️,dining,"134 Hampshire St, Cambridge, MA",Inman Square,Cambridge,290,5,55.00,USD,2026-07-20 19:59:32.599507+00
+punjabi-dhaba,Punjabi Dhaba,🍛,dining,"225 Hampshire St, Cambridge, MA",Inman Square,Cambridge,200,4,14.00,USD,2026-07-20 19:59:32.601265+00
+inman-pharmacy,Inman Pharmacy,💊,health,"1414 Cambridge St, Cambridge, MA",Inman Square,Cambridge,170,3,20.00,USD,2026-07-20 19:59:32.603435+00
+cambridge-naturals,Cambridge Naturals,🌱,wellness,"23 White St, Cambridge, MA",Inman Square,Cambridge,380,7,25.00,USD,2026-07-20 19:59:32.604974+00
+el-taller-del-sabor,El Taller del Sabor,🍽️,dining,"350 Essex St, Lawrence MA",Downtown Lawrence,Lawrence,300,5,14.00,USD,2026-07-20 19:59:32.606228+00
+la-brasa,La Brasa Restaurant,🍗,dining,"72 Common St, Lawrence MA",Common St Corridor,Lawrence,450,8,16.00,USD,2026-07-20 19:59:32.607537+00
+el-rincon-dominicano,El Rincón Dominicano,🥘,dining,"191 Broadway, Lawrence MA",Broadway,Lawrence,600,10,13.00,USD,2026-07-20 19:59:32.608884+00
+antojitos-salvadorenos,Antojitos Salvadoreños,🫔,dining,"42 Haverhill St, Lawrence MA",South Lawrence,Lawrence,750,12,11.00,USD,2026-07-20 19:59:32.610482+00
+cafe-azteca,Café Azteca,☕,coffee,"95 Common St, Lawrence MA",Common St Corridor,Lawrence,400,7,8.00,USD,2026-07-20 19:59:32.611871+00
+panaderia-la-reina,Panadería La Reina,🥐,coffee,"220 Essex St, Lawrence MA",Downtown Lawrence,Lawrence,350,6,7.00,USD,2026-07-20 19:59:32.613246+00
+compare-foods,Compare Foods,🛒,groceries,"460 Winthrop Ave, Lawrence MA",South Lawrence,Lawrence,1100,18,55.00,USD,2026-07-20 19:59:32.61462+00
+market-basket-lawrence,Market Basket,🏪,groceries,"700 Essex St, Lawrence MA",South Lawrence,Lawrence,1400,22,65.00,USD,2026-07-20 19:59:32.616264+00
+cvs-essex,CVS Pharmacy,💊,health,"300 Essex St, Lawrence MA",Downtown Lawrence,Lawrence,280,5,22.00,USD,2026-07-20 19:59:32.617755+00
+walgreens-broadway,Walgreens,💊,health,"400 Broadway, Lawrence MA",Broadway,Lawrence,900,15,20.00,USD,2026-07-20 19:59:32.62044+00
+botanica-santa-barbara,Botánica Santa Bárbara,🌿,wellness,"130 Common St, Lawrence MA",Common St Corridor,Lawrence,500,9,18.00,USD,2026-07-20 19:59:32.622194+00
+moda-style-boutique,Moda & Style Boutique,👗,retail,"170 Essex St, Lawrence MA",Downtown Lawrence,Lawrence,320,6,30.00,USD,2026-07-20 19:59:32.623961+00
+tienda-tropical,Tienda Tropical,🛍️,retail,"88 Lawrence St, Lawrence MA",South Lawrence,Lawrence,680,11,25.00,USD,2026-07-20 19:59:32.626439+00
+salon-latino-beauty,Salón Latino Beauty,💈,wellness,"215 Broadway, Lawrence MA",Broadway,Lawrence,720,12,28.00,USD,2026-07-20 19:59:32.62909+00
+starbucks-pacific-place,Starbucks,☕,coffee,"Pacific Place Mall, Jl. Jend. Sudirman Kav. 52-53",SCBD,Jakarta,200,4,60000.00,IDR,2026-07-20 19:59:32.630559+00
+kopi-kenangan-scbd,Kopi Kenangan,☕,coffee,"Pacific Place Mall, Jl. Jend. Sudirman Kav. 52-53",SCBD,Jakarta,250,5,35000.00,IDR,2026-07-20 19:59:32.631977+00
+saturdays-scbd,Saturdays Coffee,☕,coffee,"Sequis Tower, Jl. Jend. Sudirman Kav. 71",SCBD,Jakarta,380,7,55000.00,IDR,2026-07-20 19:59:32.633396+00
+excelso-sudirman,Excelso Café,☕,coffee,"Menara Sudirman, Jl. Jend. Sudirman Kav. 60",SCBD,Jakarta,400,8,45000.00,IDR,2026-07-20 19:59:32.634751+00
+union-scbd,Union,🍽️,dining,"Pacific Place Mall Lt. 5, Jl. Jend. Sudirman",SCBD,Jakarta,300,6,150000.00,IDR,2026-07-20 19:59:32.636265+00
+sushi-tei-pacific-place,Sushi Tei,🍣,dining,"Pacific Place Mall, Jl. Jend. Sudirman Kav. 52-53",SCBD,Jakarta,320,6,130000.00,IDR,2026-07-20 19:59:32.637496+00
+skye-bar,SKYE Bar & Restaurant,🌆,dining,"BCA Tower Lt. 56, Jl. MH Thamrin No. 1",SCBD,Jakarta,500,10,250000.00,IDR,2026-07-20 19:59:32.638811+00
+popolamama-scbd,Popo La Mama,🍝,dining,"Jl. Jend. Sudirman, SCBD",SCBD,Jakarta,450,9,100000.00,IDR,2026-07-20 19:59:32.640965+00
+fitness-first-pacific,Fitness First,🏋️,wellness,"Pacific Place Mall Lt. 6, Jl. Jend. Sudirman",SCBD,Jakarta,280,5,150000.00,IDR,2026-07-20 19:59:32.642437+00
+guardian-pacific-place,Guardian,💊,health,"Pacific Place Mall, Jl. Jend. Sudirman Kav. 52-53",SCBD,Jakarta,220,4,80000.00,IDR,2026-07-20 19:59:32.643957+00
+ranch-market-scbd,Ranch Market,🛒,groceries,"Pacific Place Mall B1, Jl. Jend. Sudirman",SCBD,Jakarta,260,5,200000.00,IDR,2026-07-20 19:59:32.645391+00
+indomaret-scbd,Indomaret,🏪,groceries,"Jl. Jend. Sudirman Kav. 54, SCBD",SCBD,Jakarta,150,3,25000.00,IDR,2026-07-20 19:59:32.646683+00
+toko-kopi-tuku-tebet,Toko Kopi Tuku,☕,coffee,"Jl. Prof. Supomo No. 1, Tebet",Tebet,Jakarta,180,4,30000.00,IDR,2026-07-20 19:59:32.64862+00
+titik-temu-tebet,Titik Temu Coffee,☕,coffee,"Jl. Tebet Raya No. 57, Tebet",Tebet,Jakarta,220,4,38000.00,IDR,2026-07-20 19:59:32.65047+00
+jiwa-toast-tebet,Jiwa Toast,🍞,coffee,"Jl. Tebet Barat Raya No. 33, Tebet",Tebet,Jakarta,270,5,32000.00,IDR,2026-07-20 19:59:32.652179+00
+clique-coffee-tebet,Clique Coffee & Kitchen,☕,coffee,"Jl. Tebet Barat Dalam VII No. 3, Tebet",Tebet,Jakarta,310,6,50000.00,IDR,2026-07-20 19:59:32.653585+00
+kedai-kita-tebet,Kedai Kita,🍛,dining,"Jl. Tebet Barat Dalam No. 14, Tebet",Tebet,Jakarta,300,6,55000.00,IDR,2026-07-20 19:59:32.65488+00
+warung-pak-ndut-tebet,Warung Pak Ndut,🍜,dining,"Jl. Tebet Timur Dalam Raya, Tebet",Tebet,Jakarta,350,7,40000.00,IDR,2026-07-20 19:59:32.656689+00
+nasi-goreng-kambing-tebet,Nasi Goreng Kambing,🍳,dining,"Jl. Tebet Timur Raya No. 8, Tebet",Tebet,Jakarta,450,9,50000.00,IDR,2026-07-20 19:59:32.65842+00
+mie-gacoan-tebet,Mie Gacoan,🍜,dining,"Jl. Dr. Supomo SH, Tebet",Tebet,Jakarta,380,7,45000.00,IDR,2026-07-20 19:59:32.660603+00
+gold-gym-tebet,Gold's Gym,🏋️,wellness,"Tebet Mas Indah, Jl. Dr. Supomo SH No. 1",Tebet,Jakarta,400,8,120000.00,IDR,2026-07-20 19:59:32.662645+00
+kimia-farma-tebet,Kimia Farma Apotek,💊,health,"Jl. Tebet Raya No. 2, Tebet",Tebet,Jakarta,200,4,60000.00,IDR,2026-07-20 19:59:32.66474+00
+alfamart-tebet,Alfamart,🏪,groceries,"Jl. Prof. Supomo No. 12, Tebet",Tebet,Jakarta,120,2,20000.00,IDR,2026-07-20 19:59:32.666247+00

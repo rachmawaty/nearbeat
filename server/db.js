@@ -70,5 +70,18 @@ export async function initDb() {
     );
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS promotions (
+      id           SERIAL PRIMARY KEY,
+      merchant_id  TEXT NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
+      title        TEXT NOT NULL,
+      description  TEXT,
+      discount     TEXT,
+      valid_from   DATE NOT NULL DEFAULT CURRENT_DATE,
+      valid_until  DATE NOT NULL,
+      created_at   TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
   console.log("[db] schema ready");
 }

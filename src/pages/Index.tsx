@@ -6,6 +6,7 @@ import { OfferCard } from "@/components/nearbeat/OfferCard";
 import { LiveContextDrawer } from "@/components/nearbeat/LiveContextDrawer";
 import { Onboarding } from "@/components/nearbeat/Onboarding";
 import { AuthScreen } from "@/components/nearbeat/AuthScreen";
+import { Landing } from "@/components/nearbeat/Landing";
 import { ThemeToggle } from "@/components/nearbeat/ThemeToggle";
 import { AgentThinking } from "@/components/nearbeat/AgentThinking";
 import { useAgent } from "@/hooks/useAgent";
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const auth = useAuth();
+  const [authView, setAuthView] = useState<null | "login" | "signup">(null);
   const [time, setTime] = useState(() => formatTime(new Date()));
 
   // Refresh user after Google connect redirect
@@ -106,7 +108,19 @@ const Index = () => {
 
   // Not authenticated
   if (!auth.user) {
-    return <AuthScreen onAuth={handleAuth} error={auth.error} loading={auth.loading} />;
+    if (!authView) {
+      return <Landing onSignIn={() => setAuthView("login")} onSignUp={() => setAuthView("signup")} />;
+    }
+    return (
+      <AuthScreen
+        key={authView}
+        initialMode={authView}
+        onBack={() => setAuthView(null)}
+        onAuth={handleAuth}
+        error={auth.error}
+        loading={auth.loading}
+      />
+    );
   }
 
   // Onboarding (first time after signup)

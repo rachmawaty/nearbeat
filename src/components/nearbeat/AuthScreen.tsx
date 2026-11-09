@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
@@ -9,10 +9,12 @@ interface Props {
   onAuth: (name: string, email: string, password: string, mode: "login" | "signup") => Promise<boolean>;
   error: string | null;
   loading: boolean;
+  initialMode?: "login" | "signup";
+  onBack?: () => void;
 }
 
-export function AuthScreen({ onAuth, error, loading }: Props) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+export function AuthScreen({ onAuth, error, loading, initialMode = "login", onBack }: Props) {
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,14 +26,38 @@ export function AuthScreen({ onAuth, error, loading }: Props) {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-10">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
+    <div className="relative min-h-screen w-full lg:grid lg:grid-cols-2">
+      {/* Brand panel (desktop only) */}
+      <div className="hidden lg:flex flex-col justify-between p-12 text-white" style={{ background: "var(--gradient-brand)" }}>
+        <div className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <span className="font-display text-xl font-bold">Nearbeat</span>
+        </div>
+        <div>
+          <h2 className="font-display text-4xl font-bold leading-tight xl:text-5xl">Your city, in real time.</h2>
+          <p className="mt-4 max-w-md text-white/85">Hyper-personalized local offers that match your moment: where you are, the weather, your schedule.</p>
+        </div>
+        <p className="text-xs text-white/70">Nearbeat · Your city pulse</p>
       </div>
 
-      <div className="w-full max-w-sm fade-up">
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
+      <div className="absolute top-4 right-4 flex items-center gap-1">
+        <ThemeToggle />
+      </div>
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+      )}
+
+      <div className="w-full max-w-sm sm:max-w-md fade-up">
         {/* Logo */}
-        <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-8 flex flex-col items-center text-center lg:hidden">
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--gradient-brand)" }}>
             <Sparkles className="h-7 w-7 text-white" />
           </div>
@@ -140,6 +166,7 @@ export function AuthScreen({ onAuth, error, loading }: Props) {
             {mode === "login" ? "Sign up" : "Sign in"}
           </button>
         </p>
+      </div>
       </div>
     </div>
   );

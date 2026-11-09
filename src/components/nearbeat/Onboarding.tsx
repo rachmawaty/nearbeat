@@ -128,7 +128,7 @@ export function Onboarding({ userName, token, onDone }: Props) {
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-sm fade-up">
+      <div className="w-full max-w-sm md:max-w-lg lg:max-w-xl fade-up">
         {/* Logo */}
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: "var(--gradient-brand)" }}>
@@ -146,7 +146,7 @@ export function Onboarding({ userName, token, onDone }: Props) {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card/70 p-5 backdrop-blur-md shadow-[var(--shadow-card)]">
+        <div className="rounded-2xl border border-border/60 bg-card/70 p-5 md:p-8 backdrop-blur-md shadow-[var(--shadow-card)]">
 
           {/* ── Step 1: Who are you? ── */}
           {step === 1 && (
